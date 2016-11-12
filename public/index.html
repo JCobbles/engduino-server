@@ -4,37 +4,115 @@
 
 		<script src="/socket.io/socket.io.js"></script>
 		<script src="/chartist.min.js" ></script>
+		<script src="/chartist-plugin-axistitle.min.js" ></script>
 		<script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
 		<link rel="stylesheet" href="/chartist.min.css">
+		<link href="https://fonts.googleapis.com/css?family=Dosis" rel="stylesheet">
 
 		<script>
-			var socket = io.connect();
-			socket.on('update', function (msg) {
-			    console.log(msg);
-			    $('#mydiv').html(msg.data)
-			});
+			var chartOptions = {
+				plugins: [
+					Chartist.plugins.ctAxisTitle({
+						axisX: {
+							axisTitle: 'Light level (Arbitrary units)',
+							axisClass: 'ct-axis-title',
+							offset: {
+								x: 0,
+								y: 50
+							},
+							textAnchor: 'middle'
+						},
+						axisY: {
+							axisTitle: 'Temperature (Celsius)',
+							axisClass: 'ct-axis-title',
+							offset: {
+								x: 0,
+								y: 0
+							},
+							textAnchor: 'middle',
+							flipTitle: true
+						}
+					})
+				]
+			};
+			var chart1;
+			var chart1Data = {
+				labels: [],
+				series: [[]]
+			};
 
 			$(function() {
-				var data = {
-				  // A labels array that can contain any sort of values
-				  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-				  // Our series array that contains series objects or in this case series data arrays
-				  series: [
-				    [5, 2, 4, 2, 0]
-				  ]
-				};
-
-				// Create a new line chart object where as first parameter we pass in a selector
-				// that is resolving to our chart container element. The Second parameter
-				// is the actual data object.
-				new Chartist.Line('.ct-chart', data);
+				connectToWebSocket();
+				chart1 = new Chartist.Line('#chart1', chart1Data, chartOptions);
 			});
+
+			function connectToWebSocket() {
+				var socket = io.connect();
+				socket.on('update', function (msg) {
+				    console.log(msg);
+				    $('#mydiv').html(msg.data)
+					updateCharts(msg.data);
+				});
+			}
+
+			function updateCharts(data) {
+				var dataset = data.split(",");
+				console.log(dataset);
+				chart1Data.labels.push(dataset[0]);
+				chart1Data.labels.sort();
+				chart1Data.series[0].push(dataset[1])
+				chart1Data.series[0].sort();
+				chart1.update(chart1Data);
+			}
 		</script>
+
+		<style>
+			body {
+				margin: 0;
+			}
+			.ct-chart svg {
+				overflow: visible;
+				padding-left: 15px;
+				width: calc(100% - 15px) !important;
+			}
+			h1, h2, h3, h4, h5, h6, p, li {
+				font-family: 'Dosis', sans-serif;
+			}
+			.header {
+				text-align: center;
+			    background: #F0EEE5;
+			    overflow: hidden;
+				border-bottom: 1px solid #E4DDC4;
+			}
+			a {
+				text-decoration: none;
+				color: brown;
+			}
+			.container {
+				max-width: 600px;
+				margin: 0 auto;
+			}
+		</style>
 	</head>
 
 	<body>
-		<div id="mydiv" class="ct-chart ct-perfect-fourth"></div>
+		<div class="header">
+			<h1>Welcome!</h1>
+			<p>
+				This is the ground-breaking experiment that aims to show that temperature varies with sunlight.
+			</p>
+		</div>
+		<div class="container">
+			<ul>
+				<li>Download the <a href="https://github.com/JCobbles/engduino-sensors">engduino-sensors</a> repository
+				<li>Connect your Engduino to your laptop</li>
+				<li>Run the Arduino and Processing programs</li>
+				<li>This page will start showing data as it comes in from the engduino sensors</li>
+				<li>You can see the progress of the experiment anywhere in the world, from this website</li>
+			</ul>
 
-
+			<div class="ct-chart ct-golden-section" id="chart1"></div>
+			<div class="ct-chart ct-golden-section" id="chart2"></div>
+		</div>
 	</body>
 </html>

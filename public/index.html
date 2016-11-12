@@ -1,0 +1,40 @@
+<html>
+	<head>
+		<title>Jacob's Light and Temperature Experiment</title>
+
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="/chartist.min.js" ></script>
+		<script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+		<link rel="stylesheet" href="/chartist.min.css">
+
+		<script>
+			var socket = io.connect();
+			socket.on('update', function (msg) {
+			    console.log(msg);
+			    $('#mydiv').html(msg.data)
+			});
+
+			$(function() {
+				var data = {
+				  // A labels array that can contain any sort of values
+				  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+				  // Our series array that contains series objects or in this case series data arrays
+				  series: [
+				    [5, 2, 4, 2, 0]
+				  ]
+				};
+
+				// Create a new line chart object where as first parameter we pass in a selector
+				// that is resolving to our chart container element. The Second parameter
+				// is the actual data object.
+				new Chartist.Line('.ct-chart', data);
+			});
+		</script>
+	</head>
+
+	<body>
+		<div id="mydiv" class="ct-chart ct-perfect-fourth"></div>
+
+
+	</body>
+</html>
